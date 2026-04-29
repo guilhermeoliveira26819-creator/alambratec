@@ -209,6 +209,7 @@ hr{border:none;border-top:1px solid var(--border);margin:12px 0}
     <div class="ni" onclick="nav('forn')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>Fornecedores</div>
     <div class="ni" onclick="nav('metas')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>Metas</div>
     <div class="sb-sec">Operacional</div>
+    <div class="ni" onclick="nav('producao')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M4.93 4.93a10 10 0 0 0 0 14.14"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/></svg>Produção Telas</div>
     <div class="ni" onclick="nav('tarefas')" id="ni-tar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>Tarefas<span class="ni-badge" id="badge-tar" style="display:none">0</span></div>
     <div class="ni" onclick="nav('folha')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>Folha Pagamento</div>
   </nav>
@@ -326,6 +327,41 @@ hr{border:none;border-top:1px solid var(--border);margin:12px 0}
       <div id="metas-g" class="g3"></div>
     </div>
 
+    <!-- PRODUÇÃO DE TELAS -->
+    <div class="page" id="page-producao">
+      <div class="sh">
+        <div class="stt">Produção de Telas — Edilson</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn bp" onclick="abrirEnvio()">📦 Enviar Arame</button>
+          <button class="btn bg2b" onclick="abrirRetirada()">✅ Registrar Tela Pronta</button>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:14px">
+        Fluxo: <strong style="color:var(--text2)">Seu estoque de arame</strong> → <strong style="color:var(--orange)">Em produção (Edilson)</strong> → <strong style="color:var(--accent)">Estoque de tela pronta</strong> → <strong style="color:var(--blue)">Consumida nas obras</strong>
+      </div>
+      <!-- KPIs produção -->
+      <div class="g3" style="margin-bottom:14px">
+        <div class="kpi"><div class="kpi-l">Em Produção (lotes)</div><div class="kpi-v no" id="prod-kv1">0</div><div class="kpi-s" id="prod-ks1">0 kg enviados</div></div>
+        <div class="kpi b"><div class="kpi-l">Tela em Estoque</div><div class="kpi-v nb" id="prod-kv2">0 m²</div><div class="kpi-s" id="prod-ks2">pronta para uso</div></div>
+        <div class="kpi"><div class="kpi-l">Aproveitamento Médio</div><div class="kpi-v ng" id="prod-kv3">—</div><div class="kpi-s">kg enviado vs m² entregue</div></div>
+      </div>
+      <!-- Lotes em produção -->
+      <div class="card" style="margin-bottom:12px">
+        <div class="card-t">🟡 Lotes em Produção (aguardando Edilson)</div>
+        <div id="prod-lotes-abertos"></div>
+      </div>
+      <!-- Histórico -->
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div class="card-t" style="margin-bottom:0">📋 Histórico de Produção</div>
+        </div>
+        <div class="tw">
+          <table><thead><tr><th>Data</th><th>Tipo de Tela</th><th>Metros</th><th>Área (m²)</th><th>Arame Enviado</th><th>Tela Entregue</th><th>Rendimento</th><th>Desperdício</th><th>Status</th></tr></thead>
+          <tbody id="tb-producao"></tbody></table>
+        </div>
+      </div>
+    </div>
+
     <!-- TAREFAS -->
     <div class="page" id="page-tarefas">
       <div class="sh">
@@ -401,11 +437,70 @@ hr{border:none;border-top:1px solid var(--border);margin:12px 0}
 <div class="mo" id="mo-ins"><div class="modal">
   <div class="mh"><div class="mtt">Insumo</div><button class="btn bg2b bsm bic" onclick="closeM('mo-ins')">✕</button></div>
   <div class="mb2">
-    <div class="fr c2"><div class="fld"><label>Nome</label><input id="in-n" placeholder="ex: Poste Reto 2,5m"></div><div class="fld"><label>Categoria</label><select id="in-cat"><option>Postes e Mourões</option><option>Telas e Arames</option><option>Cimento e Argamassa</option><option>Agregados (areia, pedra)</option><option>Ferragem e Metal</option><option>Combustível e Frete</option><option>Portões e Acessórios</option><option>Mão de Obra Terceirizada</option><option>Outros</option></select></div></div>
-    <div class="fr c3"><div class="fld"><label>Unidade</label><select id="in-und"><option>unidade</option><option>metro</option><option>metro²</option><option>metro³</option><option>kg</option><option>saco</option><option>rolo</option><option>lata</option><option>litro</option><option>R$ (valor direto)</option></select></div><div class="fld"><label>Preço Padrão (R$)</label><input type="number" id="in-preco" placeholder="0.00"></div><div class="fld"><label>Fornecedor</label><input id="in-forn" placeholder="opcional"></div></div>
-    <div class="fr"><div class="fld"><label>Obs</label><input id="in-obs" placeholder="ex: lata=R$3, depósito=R$80/m³"></div></div>
+    <div class="fr c2"><div class="fld"><label>Nome</label><input id="in-n" placeholder="ex: Tela fio 12 malha 8"></div><div class="fld"><label>Categoria</label><select id="in-cat" onchange="toggleTelaFields()"><option>Postes e Mourões</option><option>Telas Galvanizadas</option><option>Telas e Arames</option><option>Cimento e Argamassa</option><option>Agregados (areia, pedra)</option><option>Ferragem e Metal</option><option>Combustível e Frete</option><option>Portões e Acessórios</option><option>Mão de Obra Terceirizada</option><option>Outros</option></select></div></div>
+    <div class="fr c3"><div class="fld"><label>Unidade</label><select id="in-und"><option>unidade</option><option>metro</option><option>metro²</option><option>metro³</option><option>kg</option><option>saco</option><option>rolo</option><option>lata</option><option>litro</option><option>R$ (valor direto)</option></select></div><div class="fld"><label>Preço Padrão (R$/m²)</label><input type="number" id="in-preco" placeholder="0.00"></div><div class="fld"><label>Fornecedor / Produtor</label><input id="in-forn" placeholder="ex: Edilson"></div></div>
+    <div id="tela-fields" style="display:none;background:var(--bg3);border-radius:8px;padding:12px;margin-top:4px">
+      <div style="font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:10px">🧵 Configuração da Tela</div>
+      <div class="fr c3">
+        <div class="fld"><label>Fio</label><select id="in-fio"><option value="fio12">Fio 12</option><option value="fio14">Fio 14</option><option value="fio16">Fio 16</option><option value="outro">Outro</option></select></div>
+        <div class="fld"><label>Malha (cm)</label><input type="number" id="in-malha" placeholder="ex: 8"></div>
+        <div class="fld"><label>Altura padrão (m)</label><input type="number" id="in-altura" placeholder="ex: 1.60" step="0.01"></div>
+      </div>
+      <div class="fr c2">
+        <div class="fld"><label>Consumo de Arame (kg/m²)</label><input type="number" id="in-kgm2" placeholder="ex: 1.30" step="0.01" oninput="calcCustoTela()"></div>
+        <div class="fld"><label>Custo do Arame (R$/kg)</label><input type="number" id="in-custokg" placeholder="ex: 8.50" step="0.01" oninput="calcCustoTela()"></div>
+      </div>
+      <div style="background:var(--bg2);border-radius:6px;padding:8px 12px;font-size:12px;color:var(--text2);margin-bottom:8px">
+        Custo calculado por m²: <strong id="in-custocalc" style="color:var(--accent)">R$ 0,00</strong>
+      </div>
+      <div class="fld"><label>Arame do estoque (referência)</label><select id="in-arame-ref"><option value="">— selecione o arame —</option></select></div>
+    </div>
+    <div class="fr"><div class="fld"><label>Obs</label><input id="in-obs" placeholder="ex: Para cercas rurais, altura 1,60m"></div></div>
   </div>
   <div class="mft"><button class="btn bg2b" onclick="closeM('mo-ins')">Cancelar</button><button class="btn bp" onclick="salvarIns()">Salvar</button></div>
+</div></div>
+
+<!-- MODAL ENVIO PARA EDILSON -->
+<div class="mo" id="mo-prod-envio"><div class="modal">
+  <div class="mh"><div class="mtt">Enviar Arame para Produção</div><button class="btn bg2b bsm bic" onclick="closeM('mo-prod-envio')">✕</button></div>
+  <div class="mb2">
+    <div class="fr"><div class="fld"><label>Tipo de Tela a Produzir</label><select id="penv-tipo" onchange="calcEnvio()"><option value="">— selecione —</option></select></div></div>
+    <div class="fr c2">
+      <div class="fld"><label>Metros Lineares</label><input type="number" id="penv-metros" placeholder="ex: 100" oninput="calcEnvio()"></div>
+      <div class="fld"><label>Altura (m)</label><input type="number" id="penv-altura" placeholder="ex: 1.60" step="0.01" oninput="calcEnvio()"></div>
+    </div>
+    <div id="penv-calc" style="background:var(--bg3);border-radius:8px;padding:12px;margin:8px 0;display:none">
+      <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:8px">Cálculo Automático</div>
+      <div style="display:flex;flex-wrap:wrap;gap:14px">
+        <div><div style="font-size:10px;color:var(--text3)">Área (m²)</div><div style="font-family:'DM Mono',monospace;font-size:16px;color:var(--text)" id="penv-area">0</div></div>
+        <div><div style="font-size:10px;color:var(--text3)">Arame necessário</div><div style="font-family:'DM Mono',monospace;font-size:16px;color:var(--orange)" id="penv-kg">0 kg</div></div>
+        <div><div style="font-size:10px;color:var(--text3)">Arame em estoque</div><div style="font-family:'DM Mono',monospace;font-size:16px;" id="penv-estoque">0 kg</div></div>
+        <div><div style="font-size:10px;color:var(--text3)">Custo estimado</div><div style="font-family:'DM Mono',monospace;font-size:16px;color:var(--accent)" id="penv-custo">R$ 0</div></div>
+      </div>
+    </div>
+    <div class="fr c2">
+      <div class="fld"><label>Data do Envio</label><input type="date" id="penv-data"></div>
+      <div class="fld"><label>Observações</label><input id="penv-obs" placeholder="ex: Urgente"></div>
+    </div>
+  </div>
+  <div class="mft"><button class="btn bg2b" onclick="closeM('mo-prod-envio')">Cancelar</button><button class="btn bp" onclick="confirmarEnvio()">✓ Confirmar Envio</button></div>
+</div></div>
+
+<!-- MODAL RETIRADA DO EDILSON -->
+<div class="mo" id="mo-prod-retirada"><div class="modal">
+  <div class="mh"><div class="mtt">Registrar Tela Pronta</div><button class="btn bg2b bsm bic" onclick="closeM('mo-prod-retirada')">✕</button></div>
+  <div class="mb2">
+    <div class="fr"><div class="fld"><label>Selecionar Lote em Produção</label><select id="pret-lote" onchange="calcRetirada()"><option value="">— selecione o lote —</option></select></div></div>
+    <div class="fr c2">
+      <div class="fld"><label>m² de Tela Entregues</label><input type="number" id="pret-m2" placeholder="ex: 16.0" step="0.01" oninput="calcRetirada()"></div>
+      <div class="fld"><label>Data da Retirada</label><input type="date" id="pret-data"></div>
+    </div>
+    <div id="pret-resumo" style="background:var(--bg3);border-radius:8px;padding:12px;margin:8px 0;display:none">
+      <div id="pret-resumo-content"></div>
+    </div>
+    <div class="fr"><div class="fld"><label>Observações</label><input id="pret-obs" placeholder="Opcional"></div></div>
+  </div>
+  <div class="mft"><button class="btn bg2b" onclick="closeM('mo-prod-retirada')">Cancelar</button><button class="btn bp" onclick="confirmarRetirada()">✓ Dar Entrada no Estoque</button></div>
 </div></div>
 
 <div class="mo" id="mo-rec"><div class="modal">
@@ -523,12 +618,12 @@ var FS = firebase.firestore();
 // ESTADO
 // ══════════════════════════════════════════
 var SENHA = "alambratec2025";
-var db = {obras:[],plano:[],colabs:[],clientes:[],insumos:[],rec:[],pag:[],forn:[],metas:[],tarefas:[]};
+var db = {obras:[],plano:[],colabs:[],clientes:[],insumos:[],rec:[],pag:[],forn:[],metas:[],tarefas:[],producao:[]};
 var eid = null, oItens = [];
 var calY = new Date().getFullYear(), calM = new Date().getMonth();
-var COLS = ['obras','plano','colabs','clientes','insumos','rec','pag','forn','metas','tarefas'];
+var COLS = ['obras','plano','colabs','clientes','insumos','rec','pag','forn','metas','tarefas','producao'];
 var CORES = ['#c8f060','#4ab8ff','#ff9940','#b78cff','#40ffb8','#ff5a4a','#ffdf40','#ff78c4'];
-var TITULOS = {dash:'Dashboard',cal:'Calendário',obras:'Obras',plano:'Planejamento',receber:'A Receber',pagar:'A Pagar',rel:'Relatórios',clientes:'Clientes',colabs:'Equipe',insumos:'Insumos',forn:'Fornecedores',metas:'Metas',tarefas:'Tarefas',folha:'Folha de Pagamento'};
+var TITULOS = {dash:'Dashboard',cal:'Calendário',obras:'Obras',plano:'Planejamento',receber:'A Receber',pagar:'A Pagar',rel:'Relatórios',clientes:'Clientes',colabs:'Equipe',insumos:'Insumos',forn:'Fornecedores',metas:'Metas',tarefas:'Tarefas',folha:'Folha de Pagamento',producao:'Produção de Telas'};
 var loadedCols = 0;
 
 // ══════════════════════════════════════════
@@ -611,7 +706,7 @@ function refreshPage(){
   var el = document.querySelector('.page.on');
   if(!el) return;
   var id = el.id.replace('page-','');
-  var fn = {dash:rDash,cal:rCal,obras:rObras,plano:rPlano,receber:rRec,pagar:rPag,clientes:rCli,colabs:rColabs,insumos:rIns,forn:rForn,metas:rMetas,tarefas:rTarefas,folha:rFolha};
+  var fn = {dash:rDash,cal:rCal,obras:rObras,plano:rPlano,receber:rRec,pagar:rPag,clientes:rCli,colabs:rColabs,insumos:rIns,forn:rForn,metas:rMetas,tarefas:rTarefas,folha:rFolha,producao:rProducao};
   if(fn[id]) fn[id]();
 }
 
@@ -638,7 +733,7 @@ function nav(p){
   document.getElementById('page-'+p).classList.add('on');
   document.querySelectorAll('.ni').forEach(function(x){ if(x.getAttribute('onclick')&&x.getAttribute('onclick').indexOf("'"+p+"'")>=0) x.classList.add('on'); });
   document.getElementById('ttl').textContent = TITULOS[p]||p;
-  var fn={dash:rDash,cal:rCal,obras:rObras,plano:rPlano,receber:rRec,pagar:rPag,clientes:rCli,colabs:rColabs,insumos:rIns,forn:rForn,metas:rMetas,tarefas:rTarefas,folha:rFolha};
+  var fn={dash:rDash,cal:rCal,obras:rObras,plano:rPlano,receber:rRec,pagar:rPag,clientes:rCli,colabs:rColabs,insumos:rIns,forn:rForn,metas:rMetas,tarefas:rTarefas,folha:rFolha,producao:rProducao};
   if(fn[p]) fn[p]();
   closeSb();
 }
@@ -1274,6 +1369,306 @@ function gerarFolha(){
   alert('✅ '+lancamentos.length+' lançamentos criados em A Pagar!');
   nav('pagar');
 }
+// ══════════════════════════════════════════
+// PRODUÇÃO DE TELAS
+// ══════════════════════════════════════════
+
+function toggleTelaFields(){
+  var cat = document.getElementById('in-cat').value;
+  var show = cat === 'Telas Galvanizadas';
+  document.getElementById('tela-fields').style.display = show ? 'block' : 'none';
+  if(show) popArameRef();
+}
+
+function popArameRef(){
+  var sel = document.getElementById('in-arame-ref'); if(!sel) return;
+  var arames = db.insumos.filter(function(i){ return i.nome.toLowerCase().indexOf('arame') >= 0 || i.categoria === 'Telas e Arames'; });
+  sel.innerHTML = '<option value="">— selecione o arame —</option>' + arames.map(function(a){ return '<option value="'+a.id+'">'+a.nome+'</option>'; }).join('');
+}
+
+function calcCustoTela(){
+  var kg = Number(document.getElementById('in-kgm2').value) || 0;
+  var preco = Number(document.getElementById('in-custokg').value) || 0;
+  var custo = kg * preco;
+  var el = document.getElementById('in-custocalc');
+  if(el) el.textContent = fmt(custo);
+  // auto-fill preco field
+  var precoEl = document.getElementById('in-preco');
+  if(precoEl && custo > 0) precoEl.value = custo.toFixed(2);
+}
+
+// Override salvarIns to save tela fields
+var _origSalvarIns = salvarIns;
+salvarIns = function(){
+  var n = document.getElementById('in-n').value; if(!n){alert('Informe o nome');return;}
+  var cat = document.getElementById('in-cat').value;
+  var id = eid||uid();
+  var data = {
+    id:id, nome:n, categoria:cat,
+    und: document.getElementById('in-und').value,
+    preco: document.getElementById('in-preco').value,
+    fornecedor: document.getElementById('in-forn').value,
+    obs: document.getElementById('in-obs').value
+  };
+  if(cat === 'Telas Galvanizadas'){
+    data.eTela = true;
+    data.fio = document.getElementById('in-fio').value;
+    data.malha = document.getElementById('in-malha').value;
+    data.altura = document.getElementById('in-altura').value;
+    data.kgm2 = document.getElementById('in-kgm2').value;
+    data.custokg = document.getElementById('in-custokg').value;
+    data.arameRef = document.getElementById('in-arame-ref').value;
+    data.und = 'metro²';
+  }
+  fsSet('insumos', id, data);
+  closeM('mo-ins'); eid = null;
+};
+
+// Override edIns to load tela fields
+var _origEdIns = edIns;
+edIns = function(id){
+  var ins = db.insumos.find(function(x){return x.id===id;}); if(!ins) return; eid=id;
+  document.getElementById('in-n').value = ins.nome||'';
+  document.getElementById('in-cat').value = ins.categoria||'';
+  document.getElementById('in-und').value = ins.und||'unidade';
+  document.getElementById('in-preco').value = ins.preco||'';
+  document.getElementById('in-forn').value = ins.fornecedor||'';
+  document.getElementById('in-obs').value = ins.obs||'';
+  toggleTelaFields();
+  if(ins.eTela){
+    document.getElementById('in-fio').value = ins.fio||'fio12';
+    document.getElementById('in-malha').value = ins.malha||'';
+    document.getElementById('in-altura').value = ins.altura||'';
+    document.getElementById('in-kgm2').value = ins.kgm2||'';
+    document.getElementById('in-custokg').value = ins.custokg||'';
+    setTimeout(function(){ popArameRef(); document.getElementById('in-arame-ref').value = ins.arameRef||''; }, 100);
+  }
+  openM('mo-ins');
+};
+
+// ENVIO PARA EDILSON
+function abrirEnvio(){
+  var sel = document.getElementById('penv-tipo');
+  var telas = db.insumos.filter(function(i){ return i.eTela; });
+  sel.innerHTML = '<option value="">— selecione —</option>' + telas.map(function(t){ return '<option value="'+t.id+'">'+t.nome+'</option>'; }).join('');
+  document.getElementById('penv-metros').value = '';
+  document.getElementById('penv-altura').value = '';
+  document.getElementById('penv-obs').value = '';
+  document.getElementById('penv-data').value = tod();
+  document.getElementById('penv-calc').style.display = 'none';
+  openM('mo-prod-envio');
+}
+
+function calcEnvio(){
+  var tipoId = document.getElementById('penv-tipo').value;
+  var metros = Number(document.getElementById('penv-metros').value) || 0;
+  var altura = Number(document.getElementById('penv-altura').value) || 0;
+  if(!tipoId || !metros || !altura){ document.getElementById('penv-calc').style.display='none'; return; }
+  var tela = db.insumos.find(function(x){ return x.id===tipoId; });
+  if(!tela) return;
+  var area = metros * altura;
+  var kgNec = area * (Number(tela.kgm2) || 0);
+  var custoUnit = Number(tela.custokg) || 0;
+  var custo = kgNec * custoUnit;
+  // check arame estoque
+  var arameEst = 0;
+  if(tela.arameRef){
+    var arameIns = db.insumos.find(function(x){ return x.id===tela.arameRef; });
+    if(arameIns) arameEst = Number(arameIns.qtdEstoque) || 0;
+  }
+  document.getElementById('penv-area').textContent = area.toFixed(2)+' m²';
+  document.getElementById('penv-kg').textContent = kgNec.toFixed(2)+' kg';
+  var estEl = document.getElementById('penv-estoque');
+  estEl.textContent = arameEst.toFixed(2)+' kg';
+  estEl.style.color = arameEst >= kgNec ? 'var(--accent)' : 'var(--red)';
+  document.getElementById('penv-custo').textContent = fmt(custo);
+  document.getElementById('penv-calc').style.display = 'block';
+}
+
+function confirmarEnvio(){
+  var tipoId = document.getElementById('penv-tipo').value;
+  var metros = Number(document.getElementById('penv-metros').value);
+  var altura = Number(document.getElementById('penv-altura').value);
+  if(!tipoId||!metros||!altura){ alert('Preencha tipo, metros e altura!'); return; }
+  var tela = db.insumos.find(function(x){ return x.id===tipoId; });
+  if(!tela) return;
+  var area = metros * altura;
+  var kgEnviado = area * (Number(tela.kgm2) || 0);
+  if(!confirm('Confirmar envio de '+kgEnviado.toFixed(2)+'kg de arame para o Edilson?')) return;
+  var id = uid();
+  var lote = {
+    id:id, tipoId:tipoId, tipoNome:tela.nome,
+    metros:metros, altura:altura, area:area,
+    kgEnviado:kgEnviado, kgm2:tela.kgm2||0,
+    custokg:tela.custokg||0, arameRef:tela.arameRef||'',
+    dataEnvio:document.getElementById('penv-data').value,
+    obs:document.getElementById('penv-obs').value,
+    status:'em_producao', m2Entregue:0, dataRetirada:'',
+    desperdicio:0
+  };
+  fsSet('producao', id, lote);
+  // dar baixa no estoque de arame
+  if(tela.arameRef){
+    var arameIns = db.insumos.find(function(x){ return x.id===tela.arameRef; });
+    if(arameIns){
+      var novoEst = Math.max(0, (Number(arameIns.qtdEstoque)||0) - kgEnviado);
+      fsSet('insumos', arameIns.id, Object.assign({}, arameIns, {qtdEstoque: novoEst}));
+    }
+  }
+  closeM('mo-prod-envio');
+  alert('✅ Enviado! '+kgEnviado.toFixed(2)+'kg de arame para produção de '+area.toFixed(2)+'m² de '+tela.nome);
+}
+
+// RETIRADA DO EDILSON
+function abrirRetirada(){
+  var sel = document.getElementById('pret-lote');
+  var abertos = db.producao.filter(function(p){ return p.status==='em_producao'; });
+  sel.innerHTML = '<option value="">— selecione o lote —</option>' + abertos.map(function(p){
+    return '<option value="'+p.id+'">'+p.tipoNome+' — '+p.area.toFixed(2)+'m² (enviado '+fd(p.dataEnvio)+')</option>';
+  }).join('');
+  document.getElementById('pret-m2').value = '';
+  document.getElementById('pret-data').value = tod();
+  document.getElementById('pret-obs').value = '';
+  document.getElementById('pret-resumo').style.display = 'none';
+  openM('mo-prod-retirada');
+}
+
+function calcRetirada(){
+  var loteId = document.getElementById('pret-lote').value;
+  var m2 = Number(document.getElementById('pret-m2').value) || 0;
+  if(!loteId){ document.getElementById('pret-resumo').style.display='none'; return; }
+  var lote = db.producao.find(function(x){ return x.id===loteId; });
+  if(!lote) return;
+  var kgEsperado = m2 * (Number(lote.kgm2)||0);
+  var desp = lote.kgEnviado - kgEsperado;
+  var despPct = lote.kgEnviado > 0 ? (desp/lote.kgEnviado*100).toFixed(1) : 0;
+  document.getElementById('pret-resumo').style.display = 'block';
+  document.getElementById('pret-resumo-content').innerHTML =
+    '<div style="display:flex;flex-wrap:wrap;gap:12px;font-size:12px">'+
+    '<div><div style="color:var(--text3);font-size:10px">Arame enviado</div><div style="color:var(--orange);font-family:'DM Mono',monospace">'+lote.kgEnviado.toFixed(2)+' kg</div></div>'+
+    '<div><div style="color:var(--text3);font-size:10px">m² solicitados</div><div style="color:var(--text);font-family:'DM Mono',monospace">'+lote.area.toFixed(2)+' m²</div></div>'+
+    (m2>0?'<div><div style="color:var(--text3);font-size:10px">m² entregues</div><div style="color:var(--accent);font-family:'DM Mono',monospace">'+m2.toFixed(2)+' m²</div></div>'+
+    '<div><div style="color:var(--text3);font-size:10px">Desperdício</div><div style="color:'+(desp>0?'var(--red)':'var(--accent)')+'font-family:'DM Mono',monospace">'+desp.toFixed(2)+'kg ('+despPct+'%)</div></div>':'')+
+    '</div>';
+}
+
+function confirmarRetirada(){
+  var loteId = document.getElementById('pret-lote').value;
+  var m2 = Number(document.getElementById('pret-m2').value);
+  var data = document.getElementById('pret-data').value;
+  if(!loteId||!m2){ alert('Selecione o lote e informe os m² entregues!'); return; }
+  var lote = db.producao.find(function(x){ return x.id===loteId; });
+  if(!lote) return;
+  var kgUsado = m2 * (Number(lote.kgm2)||0);
+  var desp = lote.kgEnviado - kgUsado;
+  if(!confirm('Dar entrada de '+m2.toFixed(2)+'m² de '+lote.tipoNome+' no estoque?')) return;
+  // atualizar lote
+  fsSet('producao', loteId, Object.assign({}, lote, {
+    status:'concluido', m2Entregue:m2, dataRetirada:data,
+    desperdicio:desp, obs2:document.getElementById('pret-obs').value
+  }));
+  // dar entrada da tela no estoque do insumo correspondente
+  var telaIns = db.insumos.find(function(x){ return x.id===lote.tipoId; });
+  if(telaIns){
+    var novoEst = (Number(telaIns.qtdEstoque)||0) + m2;
+    fsSet('insumos', telaIns.id, Object.assign({}, telaIns, {qtdEstoque:novoEst}));
+  }
+  closeM('mo-prod-retirada');
+  alert('✅ '+m2.toFixed(2)+'m² de '+lote.tipoNome+' adicionados ao estoque!');
+}
+
+// RENDER PRODUÇÃO
+function rProducao(){
+  // KPIs
+  var abertos = db.producao.filter(function(p){ return p.status==='em_producao'; });
+  var concluidos = db.producao.filter(function(p){ return p.status==='concluido'; });
+  var kgAberto = abertos.reduce(function(s,p){ return s+p.kgEnviado; },0);
+  var telasIns = db.insumos.filter(function(i){ return i.eTela; });
+  var totalTela = telasIns.reduce(function(s,i){ return s+(Number(i.qtdEstoque)||0); },0);
+  var aprovMedio = '—';
+  if(concluidos.length){
+    var totalDesp = concluidos.reduce(function(s,p){ return s+Math.max(0,p.desperdicio||0); },0);
+    var totalKgEnv = concluidos.reduce(function(s,p){ return s+p.kgEnviado; },0);
+    aprovMedio = totalKgEnv>0 ? (100-totalDesp/totalKgEnv*100).toFixed(1)+'%' : '—';
+  }
+  document.getElementById('prod-kv1').textContent = abertos.length;
+  document.getElementById('prod-ks1').textContent = kgAberto.toFixed(2)+' kg enviados';
+  document.getElementById('prod-kv2').textContent = totalTela.toFixed(2)+' m²';
+  document.getElementById('prod-kv3').textContent = aprovMedio;
+
+  // Lotes abertos
+  var lotesDiv = document.getElementById('prod-lotes-abertos');
+  if(!abertos.length){
+    lotesDiv.innerHTML = '<div class="empty"><div class="ei">✅</div><div class="et">Nenhum lote em produção</div></div>';
+  } else {
+    lotesDiv.innerHTML = abertos.map(function(p){
+      return '<div style="background:var(--bg3);border-radius:8px;padding:11px 14px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">'+
+      '<div><div style="font-weight:600;font-size:13px;color:var(--text)">'+p.tipoNome+'</div>'+
+      '<div style="font-size:11px;color:var(--text3);margin-top:2px">'+
+      p.metros+'m × '+p.altura+'m = '+p.area.toFixed(2)+'m² · '+
+      '<span style="color:var(--orange)">'+p.kgEnviado.toFixed(2)+' kg enviados</span> · '+
+      'Enviado em '+fd(p.dataEnvio)+
+      (p.obs?' · '+p.obs:'')+'</div></div>'+
+      '<button class="btn bp bsm" onclick="abrirRetiradaDireto(''+p.id+'')">✓ Registrar Entrega</button>'+
+      '</div>';
+    }).join('');
+  }
+
+  // Histórico
+  var tb = document.getElementById('tb-producao');
+  var todos = db.producao.slice().sort(function(a,b){ return (b.dataEnvio||'').localeCompare(a.dataEnvio||''); });
+  if(!todos.length){
+    tb.innerHTML = '<tr><td colspan="9"><div class="empty"><div class="ei">🧵</div><div class="et">Nenhum lote registrado</div></div></td></tr>';
+    return;
+  }
+  tb.innerHTML = todos.map(function(p){
+    var rendReal = p.m2Entregue>0 ? (p.m2Entregue/p.area*100).toFixed(1)+'%' : '—';
+    var despKg = p.desperdicio>0 ? p.desperdicio.toFixed(2)+'kg' : '—';
+    var st = p.status==='concluido' ?
+      '<span class="tag tg">Concluído</span>' :
+      '<span class="tag to">Em Produção</span>';
+    return '<tr>'+
+      '<td>'+fd(p.dataEnvio)+'</td>'+
+      '<td class="tb">'+p.tipoNome+'</td>'+
+      '<td>'+p.metros+'m</td>'+
+      '<td class="tm">'+p.area.toFixed(2)+'</td>'+
+      '<td class="tm no">'+p.kgEnviado.toFixed(2)+' kg</td>'+
+      '<td class="tm ng">'+(p.m2Entregue>0?p.m2Entregue.toFixed(2)+' m²':'—')+'</td>'+
+      '<td class="tm">'+rendReal+'</td>'+
+      '<td class="tm '+(p.desperdicio>0?'nr':'ng')+'">'+despKg+'</td>'+
+      '<td>'+st+'</td>'+
+      '</tr>';
+  }).join('');
+}
+
+function abrirRetiradaDireto(loteId){
+  abrirRetirada();
+  setTimeout(function(){
+    document.getElementById('pret-lote').value = loteId;
+    calcRetirada();
+  }, 100);
+}
+
+// Hook: quando tela é usada em obra, desconta do estoque
+var _origUpdI = updI;
+updI = function(id, f, v){
+  _origUpdI(id, f, v);
+};
+
+// Desconta estoque de tela ao salvar obra (se tela galvanizada foi usada)
+var _origSalvarObra = salvarObra;
+salvarObra = function(){
+  // Desconta insumos de tela do estoque antes de salvar
+  oItens.forEach(function(it){
+    var ins = db.insumos.find(function(i){ return i.nome.toLowerCase().indexOf(it.nome.toLowerCase()) >= 0 && i.eTela; });
+    if(ins && it.qtd && Number(it.qtd) > 0 && it.und === 'metro²'){
+      var novoEst = Math.max(0, (Number(ins.qtdEstoque)||0) - Number(it.qtd));
+      fsSet('insumos', ins.id, Object.assign({}, ins, {qtdEstoque: novoEst}));
+    }
+  });
+  _origSalvarObra();
+};
+
 </script>
 </body>
 </html>
